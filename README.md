@@ -1,6 +1,6 @@
 # **Project Comment Analysis**
 
-[Homepage]()
+[Homepage](https://github.com/enogrob/rails-comment-analysis)
 
 ![project image](images/project.png)
 
