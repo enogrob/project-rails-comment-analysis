@@ -2,7 +2,7 @@
 
 [Homepage](https://github.com/enogrob/rails_comment_analysis)
 
-![rails image](public/rails.png)
+![rails image](images/project.png)
 
 
 ## Contents
