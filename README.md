@@ -1,4 +1,4 @@
-# **Rails Comment Analysis**
+# **Project Rails Comment Analysis**
 
 [Homepage](https://github.com/enogrob/rails_comment_analysis)
 
