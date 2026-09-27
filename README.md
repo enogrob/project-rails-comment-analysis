@@ -41,38 +41,51 @@ The project demonstrates best practices in Rails API design (well-aligned with S
 ### System Overview
 
 ```mermaid
-flowchart TD
-    subgraph API_Layer
-        AnalysisController -->|starts job| AnalyzeUserWorker
-        AnalyzeController -->|legacy import| ImportUserDataService
-        KeywordsController --> Keyword
-        ProgressController -->|job status| User
-    end
-    subgraph Services
-        ImportUserDataService --> TranslateService
-        ImportUserDataService --> CommentApprovalService
-        ImportUserDataService --> User
-        ImportUserDataService --> Post
-        ImportUserDataService --> Comment
-        CommentApprovalService --> Comment
-        CommentMetricsService --> Comment
-        CommentMetricsService --> User
-    end
-    subgraph Models
-        User --> Post
-        Post --> Comment
-        Keyword
-    end
-    subgraph Workers
-        AnalyzeUserWorker --> ImportUserDataService
-    end
-    subgraph External
-        JSONPlaceholder[jsonplaceholder.typicode.com]
-        LibreTranslate[LibreTranslate API]
-        ImportUserDataService --> JSONPlaceholder
-        TranslateService --> LibreTranslate
-    end
-    KeywordsController --> CommentApprovalService
+graph TD
+  subgraph API_Layer["🌐 API Layer"]
+    AnalysisController["🌐 AnalysisController"] -->|starts job| AnalyzeUserWorker
+    AnalyzeController["🌐 AnalyzeController"] -->|imports through| ImportUserDataService
+    KeywordsController["🌐 KeywordsController"] -->|manages| Keyword
+    ProgressController["🌐 ProgressController"] -->|reads status from| User
+  end
+  subgraph Services["⚙️ Services"]
+    ImportUserDataService[["⚙️ ImportUserDataService"]] -->|translates with| TranslateService
+    ImportUserDataService -->|applies| CommentApprovalService
+    ImportUserDataService -->|imports| User
+    ImportUserDataService -->|imports| Post
+    ImportUserDataService -->|imports| Comment
+    CommentApprovalService -->|evaluates| Comment
+    CommentMetricsService[["⚙️ CommentMetricsService"]] -->|measures| Comment
+    CommentMetricsService -->|calculates for| User
+  end
+  subgraph Models["🗃️ Models"]
+    User[("👤 User")] -->|has many| Post[("📝 Post")]
+    Post -->|has many| Comment[("💬 Comment")]
+    Keyword[("🔑 Keyword")]
+  end
+  subgraph Workers["🧵 Workers"]
+    AnalyzeUserWorker{{"🧵 AnalyzeUserWorker"}} -->|runs| ImportUserDataService
+  end
+  subgraph External["🌍 External APIs"]
+    JSONPlaceholder(["🌍 JSONPlaceholder"])
+    LibreTranslate(["🌍 LibreTranslate API"])
+    ImportUserDataService -->|fetches from| JSONPlaceholder
+    TranslateService -->|sends translation requests to| LibreTranslate
+  end
+  KeywordsController -->|informs| CommentApprovalService
+
+  classDef process fill:#DCEBFA,stroke:#355C7D,color:#1E293B;
+  classDef data fill:#DDF2E1,stroke:#3F6B4F,color:#1E3324;
+  classDef external fill:#FBE4F0,stroke:#8E496D,color:#3F2434;
+  class AnalysisController,AnalyzeController,KeywordsController,ProgressController,ImportUserDataService,TranslateService,CommentApprovalService,CommentMetricsService,AnalyzeUserWorker process;
+  class User,Post,Comment,Keyword data;
+  class JSONPlaceholder,LibreTranslate external;
+  linkStyle default stroke:#52606D,stroke-width:1.5px;
+  style API_Layer fill:#EDF4FB,stroke:#355C7D,color:#1E293B;
+  style Services fill:#EDF4FB,stroke:#355C7D,color:#1E293B;
+  style Models fill:#EAF5EC,stroke:#3F6B4F,color:#1E3324;
+  style Workers fill:#EDF4FB,stroke:#355C7D,color:#1E293B;
+  style External fill:#FCECF3,stroke:#8E496D,color:#3F2434;
 ```
 
 
@@ -82,21 +95,27 @@ flowchart TD
 <summary>Gems Dependency Diagram</summary>
 
 ```mermaid
-flowchart TD
-    Rails --> ActiveRecord
-    Rails --> Sidekiq
-    Rails --> Redis
-    Rails --> HTTParty
-    Rails --> AASM
-    Rails --> RSpec
-    Rails --> FactoryBot
-    Rails --> SimpleCov
-    Sidekiq --> Redis
-    ImportUserDataService --> HTTParty
-    TranslateService --> HTTParty
-    Comment --> AASM
-    CommentMetricsService --> Redis
-    AnalyzeUserWorker --> Sidekiq
+graph TD
+  Rails["💎 Rails"] -->|includes| ActiveRecord["🗄️ ActiveRecord"]
+  Rails -->|uses| Sidekiq["🧵 Sidekiq"]
+  Rails -->|uses| Redis[("📦 Redis")]
+  Rails -->|uses| HTTParty["🌐 HTTParty"]
+  Rails -->|uses| AASM["🔄 AASM"]
+  Rails -->|uses| RSpec["🧪 RSpec"]
+  Rails -->|uses| FactoryBot["🏭 FactoryBot"]
+  Rails -->|uses| SimpleCov["📊 SimpleCov"]
+  Sidekiq -->|queues jobs in| Redis
+  ImportUserDataService[["⚙️ ImportUserDataService"]] -->|makes requests with| HTTParty
+  TranslateService[["⚙️ TranslateService"]] -->|makes requests with| HTTParty
+  Comment["💬 Comment"] -->|uses| AASM
+  CommentMetricsService[["⚙️ CommentMetricsService"]] -->|caches in| Redis
+  AnalyzeUserWorker{{"🧵 AnalyzeUserWorker"}} -->|runs on| Sidekiq
+
+  classDef process fill:#DCEBFA,stroke:#355C7D,color:#1E293B;
+  classDef data fill:#DDF2E1,stroke:#3F6B4F,color:#1E3324;
+  class Rails,ActiveRecord,Sidekiq,HTTParty,AASM,RSpec,FactoryBot,SimpleCov,ImportUserDataService,TranslateService,Comment,CommentMetricsService,AnalyzeUserWorker process;
+  class Redis data;
+  linkStyle default stroke:#52606D,stroke-width:1.5px;
 ```
 
 </details>
@@ -118,36 +137,36 @@ erDiagram
 
 ```mermaid
 mindmap
-  root((Project Comment Analysis))
-    API
-      AnalysisController
-      AnalyzeController
-      KeywordsController
-      ProgressController
-    Services
-      ImportUserDataService
-      TranslateService
-      CommentApprovalService
-      CommentMetricsService
-    Models
-      User
-      Post
-      Comment
-      Keyword
-    Workers
-      AnalyzeUserWorker
-    External
-      JSONPlaceholder
-      LibreTranslate
-    Testing
-      RSpec
-      FactoryBot
-      SimpleCov
-    Background Jobs
-      Sidekiq
-      Redis
-    Deployment
-      Docker
+  root((🗨️ Project Comment Analysis))
+    🌐 API
+      🧭 AnalysisController
+      📥 AnalyzeController
+      🔑 KeywordsController
+      📈 ProgressController
+    ⚙️ Services
+      📦 ImportUserDataService
+      🌐 TranslateService
+      ✅ CommentApprovalService
+      📊 CommentMetricsService
+    🗃️ Models
+      👤 User
+      📝 Post
+      💬 Comment
+      🔑 Keyword
+    🧵 Workers
+      🔄 AnalyzeUserWorker
+    🌍 External APIs
+      🧪 JSONPlaceholder
+      🌐 LibreTranslate
+    🧪 Testing
+      ✅ RSpec
+      🏭 FactoryBot
+      📊 SimpleCov
+    ⏱️ Background Jobs
+      🧵 Sidekiq
+      📦 Redis
+    🚢 Deployment
+      🐳 Docker
 ```
 
 </details>
@@ -156,18 +175,26 @@ mindmap
 <summary>Deployment Architecture</summary>
 
 ```mermaid
-flowchart LR
-    Client --> RailsAPI["Rails API App"]
-    RailsAPI --> Sidekiq
-    RailsAPI --> Redis
-    RailsAPI --> DB[(SQLite3)]
-    Sidekiq --> Redis
-    RailsAPI --> LibreTranslate
-    RailsAPI --> JSONPlaceholder
-    RailsAPI -.-> Docker
-    Sidekiq -.-> Docker
-    Redis -.-> Docker
-    DB -.-> Docker
+graph LR
+  Client(["👤 Client"]) -->|sends requests to| RailsAPI["🌐 Rails API App"]
+  RailsAPI -->|enqueues jobs with| Sidekiq{{"🧵 Sidekiq"}}
+  RailsAPI -->|caches through| Redis[("📦 Redis")]
+  RailsAPI -->|persists data in| DB[("🗄️ SQLite3")]
+  Sidekiq -->|uses queue in| Redis
+  RailsAPI -->|translates with| LibreTranslate(["🌍 LibreTranslate API"])
+  RailsAPI -->|imports from| JSONPlaceholder(["🌍 JSONPlaceholder API"])
+  RailsAPI -.->|containerized by| Docker["🐳 Docker"]
+  Sidekiq -.->|containerized by| Docker
+  Redis -.->|containerized by| Docker
+  DB -.->|containerized by| Docker
+
+  classDef process fill:#DCEBFA,stroke:#355C7D,color:#1E293B;
+  classDef data fill:#DDF2E1,stroke:#3F6B4F,color:#1E3324;
+  classDef external fill:#FBE4F0,stroke:#8E496D,color:#3F2434;
+  class RailsAPI,Sidekiq,Docker process;
+  class Redis,DB data;
+  class Client,LibreTranslate,JSONPlaceholder external;
+  linkStyle default stroke:#52606D,stroke-width:1.5px;
 ```
 
 </details>
@@ -177,15 +204,15 @@ flowchart LR
 
 ```mermaid
 gitGraph
-   commit id: "rails-initial-setup"
-   commit id: "rspec-initial-setup"
-   commit id: "model-initial-setup"
-   commit id: "service-initial-setup"
-   commit id: "controller-routes-initial-setup"
-   commit id: "add-sidekiq-redis"
-   commit id: "add-tests"
-   commit id: "add-simplecov"
-   commit id: "add-readme"
+  commit id: "💎 rails-initial-setup"
+  commit id: "🧪 rspec-initial-setup"
+  commit id: "🗃️ model-initial-setup"
+  commit id: "⚙️ service-initial-setup"
+  commit id: "🌐 controller-routes-initial-setup"
+  commit id: "🧵 add-sidekiq-redis"
+  commit id: "✅ add-tests"
+  commit id: "📊 add-simplecov"
+  commit id: "📘 add-readme"
 ```
 
 </details>
